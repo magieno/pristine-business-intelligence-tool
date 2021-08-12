@@ -5,7 +5,6 @@ Pristine Business Intelligence Tool is a tool that gathers and captures data fro
 * Jira
 * Pluralsight Flow
 * Google Calendar
-* 
 
 ## Metrics
 The idea is to provide a quick way to retrieve metrics on your users:
