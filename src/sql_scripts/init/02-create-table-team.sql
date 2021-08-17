@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS `team` (
+    id VARCHAR(255) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    CONSTRAINT team_id_pk PRIMARY KEY (id)
+);
