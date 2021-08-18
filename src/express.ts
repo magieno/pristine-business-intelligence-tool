@@ -21,7 +21,7 @@ const bootstrap = () => {
     app.listen(port, async () => {
         await kernel.init(AppModule);
 
-        console.log(`Pristine starter listening at http://localhost:${port}`)
+        console.log(`Pristine Business Inteligence Tool listening at http://localhost:${port}`)
     })
 }
 

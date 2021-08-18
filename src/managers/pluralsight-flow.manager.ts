@@ -30,12 +30,21 @@ export class PluralsightFlowManager {
         return pluralsightFlowUser;
     }
 
-    public async addAlias(apexUserId: string, options: PluralsightFlowUserAliasCreationOptions): Promise<PluralsightFlowUser> {
+    public async associate(userId: string, options: PluralsightFlowUserAssociationOptions): Promise<PluralsightFlowUser> {
+        const user = await this.userManager.get(userId);
 
+        const jiraUser = await this.pluralsightFlowUserRepository.createOrUpdate(options.apexUserId, userId);
+        jiraUser.user = user;
+
+        return jiraUser;
+    }
+
+    public async addUserAlias(apexUserId: string, options: PluralsightFlowUserAliasCreationOptions): Promise<PluralsightFlowUser> {
+        await this.pluralsightFlowUserRepository.addUserAlias(apexUserId, options.userAliasId);
         return this.get(apexUserId);
     }
 
-    public async removeAlias(apexUserId: string, aliasUserId: string): Promise<void> {
-
+    public async removeUserAlias(apexUserId: string, aliasUserId: string): Promise<void> {
+        await this.pluralsightFlowUserRepository.removeUserAlias(apexUserId, aliasUserId);
     }
 }

@@ -138,14 +138,70 @@ export class PluralsightFlowUserRepository {
                         results.forEach(row => {
                             pluralsightFlowUser.aliases.push(row.alias_user_id);
                         })
+
+                        return resolve(pluralsightFlowUsers);
                     });
 
                     pluralsightFlowUsers.push(pluralsightFlowUser);
                 })
 
                 connection.end();
-                return resolve(pluralsightFlowUsers);
+
             });
         });
+    }
+
+    public addUserAlias(apexUserId: string, aliasUserId: string): Promise<void> {
+        return new Promise((resolve, reject) => {
+            const connection = this.mysqlClient.getConnection();
+
+            connection.connect();
+
+            connection.query({
+                sql: "INSERT INTO pluralsight_flow_user_alias(apex_user_id, alias_user_id) VALUES (?, ?)",
+                values: [
+                    apexUserId,
+                    aliasUserId,
+                ],
+            }, (error, results, fields) => {
+                if (error) {
+                    this.logHandler.error("Mysql error" + error?.message + " - " + error?.sql, {error})
+
+                    switch(error.code) {
+                        case "ER_DUP_ENTRY":
+                            return reject(new BadRequestHttpError("The alias is already associated to this user.", [error]));
+                    }
+                }
+
+
+                return resolve();
+            });
+
+            connection.end();
+        })
+    }
+
+    public removeUserAlias(apexUserId: string, aliasUserId: string): Promise<void> {
+        return new Promise((resolve, reject) => {
+            const connection = this.mysqlClient.getConnection();
+
+            connection.connect();
+
+            connection.query({
+                sql: "DELETE FROM pluralsight_flow_user_alias WHERE apex_user_id = ? AND alias_user_id = ?",
+                values: [
+                    apexUserId,
+                    aliasUserId,
+                ],
+            }, (error, results, fields) => {
+                if (error) {
+                    this.logHandler.error("Mysql error" + error?.message + " - " + error?.sql, {error})
+                }
+
+                return resolve();
+            });
+
+            connection.end();
+        })
     }
 }

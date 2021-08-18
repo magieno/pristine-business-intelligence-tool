@@ -25,14 +25,20 @@ export class PluralsightFlowUserController {
         return this.pluralsightFlowManager.list(offset ?? 0, limit ?? 100);
     }
 
+    @route(HttpMethod.Post, "/users/:id/pluralsight-flow-user")
+    @bodyValidation(PluralsightFlowUserAssociationOptions)
+    public associateJiraUser(@routeParameter("id") userId: string, @body() options: PluralsightFlowUserAssociationOptions) {
+        return this.pluralsightFlowManager.associate(userId, options);
+    }
+
     @route(HttpMethod.Post, "/pluralsight-flow-users/:id/aliases")
     @bodyValidation(PluralsightFlowUserAliasCreationOptions)
     public addAlias(@routeParameter("id") id: string, @body() options: PluralsightFlowUserAliasCreationOptions) {
-        return this.pluralsightFlowManager.addAlias(id, options);
+        return this.pluralsightFlowManager.addUserAlias(id, options);
     }
 
     @route(HttpMethod.Delete, "/pluralsight-flow-users/:id/aliases/:aliasId")
     public removeAlias(@routeParameter("id") id: string, @routeParameter("aliasId") aliasId: string) {
-        return this.pluralsightFlowManager.removeAlias(id, aliasId);
+        return this.pluralsightFlowManager.removeUserAlias(id, aliasId);
     }
 }
