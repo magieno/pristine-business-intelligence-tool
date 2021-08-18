@@ -4,7 +4,9 @@ import {Kernel} from "@pristine-ts/core";
 import {AppModule} from "./app.module";
 
 const express = require('express')
+const bodyParser = require('body-parser')
 const app = express()
+app.use(bodyParser.json({ type: 'application/json' }))
 const port = 3000
 const kernel = new Kernel();
 

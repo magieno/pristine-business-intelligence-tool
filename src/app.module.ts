@@ -12,28 +12,57 @@ import {Auth0Module} from "@pristine-ts/auth0";
 import {HttpModule} from "@pristine-ts/http";
 import {StripeModule} from "@pristine-ts/stripe";
 import {UserRepository} from "./repositories/user.repository";
+import {UserManager} from "./managers/user.manager";
+import {UserController} from "./controllers/user.controller";
+import {JiraUserController} from "./controllers/jira-user.controller";
+import {JiraManager} from "./managers/jira.manager";
+import {JiraUserRepository} from "./repositories/jira-user.repository";
+import {TeamRepository} from "./repositories/team.repository";
 
-export const AppModuleKeyname =  "pristine.starter";
+export const AppModuleKeyname = "pristine.starter";
 
 export const AppModule: AppModuleInterface = {
     importServices: [
+        // Controllers
+        JiraUserController,
+        UserController,
+
+        // Managers
+        JiraManager,
+        UserManager,
+
+        // Repositories
+        JiraUserRepository,
+        TeamRepository,
         UserRepository,
     ],
     importModules: [
         AwsModule,
-        Auth0Module,
-        AwsXrayModule,
         CoreModule,
         HttpModule,
         LoggingModule,
         NetworkingModule,
-        RedisModule,
         SecurityModule,
-        StripeModule,
         ValidationModule,
         TelemetryModule,
     ],
     keyname: AppModuleKeyname,
-    configurationDefinitions: [
+    configurationDefinitions: [{
+        parameterName: "mysql.host",
+        defaultValue: "localhost",
+        isRequired: false,
+    }, {
+        parameterName: "mysql.user",
+        defaultValue: "magieno",
+        isRequired: false,
+    }, {
+        parameterName: "mysql.password",
+        defaultValue: "magieno",
+        isRequired: false,
+    }, {
+        parameterName: "mysql.database",
+        defaultValue: "business_intelligence_tool",
+        isRequired: false,
+    },
     ]
 };
