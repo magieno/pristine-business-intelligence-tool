@@ -18,6 +18,9 @@ import {JiraUserController} from "./controllers/jira-user.controller";
 import {JiraManager} from "./managers/jira.manager";
 import {JiraUserRepository} from "./repositories/jira-user.repository";
 import {TeamRepository} from "./repositories/team.repository";
+import {TeamController} from "./controllers/team.controller";
+import {TeamManager} from "./managers/team.manager";
+import {TeamMemberRepository} from "./repositories/team-member.repository";
 
 export const AppModuleKeyname = "pristine.starter";
 
@@ -25,15 +28,18 @@ export const AppModule: AppModuleInterface = {
     importServices: [
         // Controllers
         JiraUserController,
+        TeamController,
         UserController,
 
         // Managers
         JiraManager,
+        TeamManager,
         UserManager,
 
         // Repositories
         JiraUserRepository,
         TeamRepository,
+        TeamMemberRepository,
         UserRepository,
     ],
     importModules: [

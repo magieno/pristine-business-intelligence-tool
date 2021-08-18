@@ -1,4 +1,4 @@
-import {body, controller, route, routeParameter} from "@pristine-ts/networking";
+import {body, controller, queryParameter, route, routeParameter} from "@pristine-ts/networking";
 import {HttpMethod} from "@pristine-ts/common";
 import {bodyValidation} from "@pristine-ts/validation";
 import {UserCreationOptions} from "../options/user-creation.options";
@@ -10,6 +10,16 @@ import {JiraManager} from "../managers/jira.manager";
 @injectable()
 export class JiraUserController {
     constructor(private readonly jiraManager: JiraManager) {
+    }
+
+    @route(HttpMethod.Get, "/jira-users/:id")
+    public get(@routeParameter("id") id: string) {
+        return this.jiraManager.get(id);
+    }
+
+    @route(HttpMethod.Get, "/jira-users")
+    public list(@queryParameter("limit") limit: number, @queryParameter("offset") offset: number) {
+        return this.jiraManager.list(offset ?? 0, limit ?? 100);
     }
 
     @route(HttpMethod.Post, "/users/:id/jira-user")

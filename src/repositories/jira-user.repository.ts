@@ -40,4 +40,77 @@ export class JiraUserRepository {
             connection.end();
         })
     }
+
+    public get(id: string): Promise<JiraUser | null> {
+        return new Promise<JiraUser | null>((resolve, reject) => {
+            const connection = this.mysqlClient.getConnection();
+
+            connection.connect();
+
+            connection.query({
+                sql: "SELECT jira_user.id, user_id, email FROM jira_user INNER JOIN `user` ON `user`.id = jira_user.user_id WHERE jira_user.id = ?",
+                values: [
+                    id
+                ],
+            }, (error, results, fields) => {
+                if (error) {
+                    this.logHandler.error("Mysql error" + error?.message + " - " + error?.sql, {error})
+                }
+
+                if(results.length === 0) {
+                    return resolve(null);
+                }
+
+                const row = results[0];
+
+                const jiraUser = new JiraUser();
+                jiraUser.id = row.id;
+
+                jiraUser.user = new User();
+                jiraUser.user.id = row.user_id;
+                jiraUser.user.email = row.email;
+
+                return resolve(jiraUser);
+            });
+
+            connection.end();
+        });
+    }
+
+    public findAll(offset: number = 0, limit: number = 100): Promise<JiraUser[]> {
+        return new Promise<JiraUser[]>((resolve, reject) => {
+            const jiraUsers: JiraUser[] = [];
+
+            const connection = this.mysqlClient.getConnection();
+
+            connection.connect();
+
+            connection.query({
+                sql: "SELECT jira_user.id, user_id, email FROM jira_user INNER JOIN `user` ON `user`.id = jira_user.user_id LIMIT ?,?",
+                values: [
+                    offset,
+                    limit,
+                ],
+            }, (error, results, fields) => {
+                if (error) {
+                    this.logHandler.error("Mysql error" + error?.message + " - " + error?.sql, {error})
+                }
+
+                results.forEach(row => {
+                    const jiraUser = new JiraUser();
+                    jiraUser.id = row.id;
+
+                    jiraUser.user = new User();
+                    jiraUser.user.id = row.user_id;
+                    jiraUser.user.email = row.email;
+
+                    jiraUsers.push(jiraUser);
+                })
+
+                return resolve(jiraUsers);
+            });
+
+            connection.end();
+        });
+    }
 }
