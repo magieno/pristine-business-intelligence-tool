@@ -1,7 +1,9 @@
 import {User} from "./user.model";
 
-export class PluralsightUser {
+export class PluralsightFlowUser {
     public apexUserId: string;
 
     public user: User;
+
+    public aliases: string[] = [];
 }

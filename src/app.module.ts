@@ -21,6 +21,9 @@ import {TeamRepository} from "./repositories/team.repository";
 import {TeamController} from "./controllers/team.controller";
 import {TeamManager} from "./managers/team.manager";
 import {TeamMemberRepository} from "./repositories/team-member.repository";
+import {PluralsightFlowUserController} from "./controllers/pluralsight-flow-user.controller";
+import {PluralsightFlowManager} from "./managers/pluralsight-flow.manager";
+import {PluralsightFlowUserRepository} from "./repositories/pluralsight-flow-user.repository";
 
 export const AppModuleKeyname = "pristine.starter";
 
@@ -28,16 +31,19 @@ export const AppModule: AppModuleInterface = {
     importServices: [
         // Controllers
         JiraUserController,
+        PluralsightFlowUserController,
         TeamController,
         UserController,
 
         // Managers
         JiraManager,
+        PluralsightFlowManager,
         TeamManager,
         UserManager,
 
         // Repositories
         JiraUserRepository,
+        PluralsightFlowUserRepository,
         TeamRepository,
         TeamMemberRepository,
         UserRepository,
