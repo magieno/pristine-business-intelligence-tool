@@ -17,4 +17,8 @@ export class ExtractionRequest {
     public totalNumberOfExtractions: number = 0;
 
     public completedExtractions: number = 0;
+
+    public startDate: Date;
+
+    public endDate: Date;
 }

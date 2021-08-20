@@ -97,6 +97,61 @@ export class PluralsightFlowUserRepository {
         });
     }
 
+    public getFromUserId(userId: string): Promise<PluralsightFlowUser | null> {
+        return new Promise<PluralsightFlowUser | null>((resolve, reject) => {
+            const connection = this.mysqlClient.getConnection();
+
+            connection.connect();
+
+            connection.query({
+                sql: "SELECT pluralsight_flow_user.apex_user_id, user_id, email FROM pluralsight_flow_user INNER JOIN `user` ON `user`.id = pluralsight_flow_user.user_id WHERE pluralsight_flow_user.user_id = ?",
+                values: [
+                    userId
+                ],
+            }, (error, results, fields) => {
+                if (error) {
+                    this.logHandler.error("Mysql error" + error?.message + " - " + error?.sql, {error})
+                }
+
+                if(results.length === 0) {
+                    return resolve(null);
+                }
+
+                // Construct the Pluralsight Flow user.
+
+                const row = results[0];
+
+                const pluralsightFlowUser = new PluralsightFlowUser();
+                pluralsightFlowUser.apexUserId = row.apex_user_id;
+
+                pluralsightFlowUser.user = new User();
+                pluralsightFlowUser.user.id = row.user_id;
+                pluralsightFlowUser.user.email = row.email;
+
+                // Lookup the aliases
+                connection.query({
+                    sql: "SELECT * FROM pluralsight_flow_user_alias WHERE apex_user_id = ?",
+                    values: [
+                        pluralsightFlowUser.apexUserId,
+                    ],
+                }, (error, results, fields) => {
+                    if (error) {
+                        this.logHandler.error("Mysql error" + error?.message + " - " + error?.sql, {error})
+                    }
+
+                    results.forEach(row => {
+                        pluralsightFlowUser.aliases.push(row.alias_user_id);
+                    })
+
+                    return resolve(pluralsightFlowUser);
+                });
+
+                connection.end();
+            });
+
+        });
+    }
+
     public findAll(offset: number = 0, limit: number = 100): Promise<PluralsightFlowUser[]> {
         return new Promise<PluralsightFlowUser[]>((resolve, reject) => {
             const pluralsightFlowUsers: PluralsightFlowUser[] = [];

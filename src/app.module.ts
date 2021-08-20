@@ -1,5 +1,5 @@
 import {AppModuleInterface} from "@pristine-ts/common";
-import {AwsModule} from "@pristine-ts/aws";
+import {AwsModule, SSMResolver} from "@pristine-ts/aws";
 import {NetworkingModule} from "@pristine-ts/networking";
 import {CoreModule} from "@pristine-ts/core";
 import {LoggingModule} from "@pristine-ts/logging";
@@ -27,6 +27,7 @@ import {PluralsightFlowUserRepository} from "./repositories/pluralsight-flow-use
 import {ExtractionRequestManager} from "./managers/extraction-request.manager";
 import {ExtractionRequestRepository} from "./repositories/extraction-request.repository";
 import {ExtractionRequestController} from "./controllers/extraction-request.controller";
+import {EnvironmentVariableResolver} from "@pristine-ts/configuration";
 
 export const AppModuleKeyname = "pristine.starter";
 
@@ -81,6 +82,13 @@ export const AppModule: AppModuleInterface = {
         parameterName: "mysql.database",
         defaultValue: "business_intelligence_tool",
         isRequired: false,
+    },{
+        parameterName: "pluralsight-flow.api-key",
+        isRequired: true,
+        defaultResolvers: [
+            new EnvironmentVariableResolver("PLURALSIGHT_FLOW_API_KEY"),
+            new SSMResolver("pluralsight-flow.api-key", "us-east-2"),
+        ]
     },
     ]
 };

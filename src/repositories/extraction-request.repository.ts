@@ -6,6 +6,7 @@ import {ExtractionRequest} from "../models/extraction-request.model";
 import {v4 as uuidv4} from 'uuid';
 import {ExtractionServiceEnum} from "../enums/extraction-service.enum";
 import {ExtractionRequestStatusEnum} from "../enums/extraction-request-status.enum";
+import { format } from 'date-fns'
 
 @injectable()
 export class ExtractionRequestRepository {
@@ -42,6 +43,8 @@ export class ExtractionRequestRepository {
                 extractionRequest.status = row.status;
                 extractionRequest.completedExtractions = row.completed_extractions;
                 extractionRequest.totalNumberOfExtractions = row.total_number_of_extractions;
+                extractionRequest.startDate = new Date(row.start_date);
+                extractionRequest.endDate = new Date(row.end_date);
 
                 return resolve(extractionRequest);
             });
@@ -79,7 +82,8 @@ export class ExtractionRequestRepository {
                     extractionRequest.status = row.status;
                     extractionRequest.completedExtractions = row.completed_extractions;
                     extractionRequest.totalNumberOfExtractions = row.total_number_of_extractions;
-
+                    extractionRequest.startDate = new Date(row.start_date);
+                    extractionRequest.endDate = new Date(row.end_date);
                     extractionRequests.push(extractionRequest);
                 })
 
@@ -90,7 +94,7 @@ export class ExtractionRequestRepository {
         });
     }
 
-    public create(service: ExtractionServiceEnum, datapoints: string[], teamIds: string[], userIds: string[], totalNumberOfExtractions: number): Promise<ExtractionRequest> {
+    public create(service: ExtractionServiceEnum, datapoints: string[], teamIds: string[], userIds: string[], totalNumberOfExtractions: number, startDate: Date, endDate: Date): Promise<ExtractionRequest> {
         return new Promise<ExtractionRequest>((resolve, reject) => {
             const extractionRequest = new ExtractionRequest();
             extractionRequest.id = uuidv4();
@@ -101,13 +105,15 @@ export class ExtractionRequestRepository {
             extractionRequest.userIds = userIds;
             extractionRequest.totalNumberOfExtractions = totalNumberOfExtractions;
             extractionRequest.completedExtractions = 0;
+            extractionRequest.startDate = startDate;
+            extractionRequest.endDate = endDate;
 
             const connection = this.mysqlClient.getConnection();
 
             connection.connect();
 
             connection.query({
-                sql: "INSERT INTO extraction_request (id, user_ids, team_ids, service, datapoints, status, total_number_of_extractions, completed_extractions) VALUES (?,?,?,?,?,?,?,?)",
+                sql: "INSERT INTO extraction_request (id, user_ids, team_ids, service, datapoints, status, total_number_of_extractions, completed_extractions, start_date, end_date) VALUES (?,?,?,?,?,?,?,?,?,?)",
                 values: [
                     extractionRequest.id,
                     JSON.stringify(extractionRequest.userIds),
@@ -117,6 +123,8 @@ export class ExtractionRequestRepository {
                     extractionRequest.status,
                     extractionRequest.totalNumberOfExtractions,
                     extractionRequest.completedExtractions,
+                    format(extractionRequest.startDate, "yyyy-MM-dd"),
+                    format(extractionRequest.endDate, "yyyy-MM-dd"),
                 ],
             }, (error, results, fields) => {
                 if (error) {

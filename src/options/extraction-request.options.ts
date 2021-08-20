@@ -1,6 +1,6 @@
 import {ExtractionServiceEnum} from "../enums/extraction-service.enum";
 import {ExtractionRequestStatusEnum} from "../enums/extraction-request-status.enum";
-import {IsArray, IsEnum, MinLength} from "class-validator";
+import {IsArray, IsDate, IsEnum, MinLength} from "class-validator";
 
 export class ExtractionRequestOptions {
     @IsArray()
@@ -14,4 +14,10 @@ export class ExtractionRequestOptions {
 
     @IsArray()
     public datapoints: string[] = [];
+
+    @IsDate()
+    public startDate: Date;
+
+    @IsDate()
+    public endDate: Date;
 }
