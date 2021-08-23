@@ -1,7 +1,7 @@
 import {User} from "./user.model";
 
 export class PluralsightFlowUser {
-    public apexUserId: string;
+    public apexUserId: number;
 
     public user: User;
 

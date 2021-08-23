@@ -9,10 +9,13 @@ import {HttpClientInterface, HttpRequestInterface, HttpRequestOptions} from "@pr
 import {HttpMethod} from "@pristine-ts/common";
 import {LogHandlerInterface} from "@pristine-ts/logging";
 import {add, format} from 'date-fns'
+import {ExtractionRequestRepository} from "../repositories/extraction-request.repository";
+import {PluralsightFlowPullRequestModel} from "../models/pluralsight-flow-pull-request.model";
 
 @injectable()
 export class PluralsightFlowManager {
     constructor(private readonly pluralsightFlowUserRepository: PluralsightFlowUserRepository,
+                private readonly extractionRequestRepository: ExtractionRequestRepository,
                 private readonly userManager: UserManager,
                 @inject("HttpClientInterface") private readonly httpClient: HttpClientInterface,
                 @inject("LogHandlerInterface") private readonly logHandler: LogHandlerInterface,
@@ -73,7 +76,6 @@ export class PluralsightFlowManager {
             const pluralsightFlowUser = await this.getFromUserId(userId);
 
             // Make the Request to PluralsightFlow
-
             const requestOptions: HttpRequestOptions = {
                 isRetryable: (httpRequest, httpResponse) => {
                     this.logHandler.error("Retrying");
@@ -86,7 +88,7 @@ export class PluralsightFlowManager {
             const offset = 0;
 
             const httpRequest: HttpRequestInterface = {
-                url: "https://flow.pluralsight.com/v3/customer/core/commits/?limit=" + limit + "&offset=" + offset + "&author_date__gte=" + format(startDate, "yyyy-MM-dd") + "&author_date__lte=" + format(add(startDate, {days: 5}), "yyyy-MM-dd") + "&apex_user_id=" + pluralsightFlowUser.apexUserId + "&ordering=author_date",
+                url: "https://flow.pluralsight.com/v3/customer/core/pull_requests/?limit=" + limit + "&offset=" + offset + "&author_date__gte=" + format(startDate, "yyyy-MM-dd") + "&author_date__lte=" + format(add(startDate, {days: 5}), "yyyy-MM-dd") + "&apex_user_id=" + pluralsightFlowUser.apexUserId + "&ordering=author_date",
                 httpMethod: HttpMethod.Get,
                 headers: {
                     "Accept": "application/json",
@@ -98,12 +100,41 @@ export class PluralsightFlowManager {
             const httpResponse = await this.httpClient.request(httpRequest, requestOptions);
 
             // Loop over the pull requests
+            const body = JSON.parse(httpResponse.body);
 
-            // Get all the reviewers and save them
+            if (body === undefined || body.results === undefined || Array.isArray(body.results) === false) {
+                this.logHandler.error("Body is undefined or results is undefined or results is not an array.");
+                return reject();
+            }
 
-            // Save the pull request
+            // Save the pull requests
+            const pullRequestsToSave: PluralsightFlowPullRequestModel[] = body.results.map(result => {
+                const pullRequest: PluralsightFlowPullRequestModel = {
+                    id: parseInt(result.id),
+                    title: result.title,
+                    url: result.url,
+                    createdAt: new Date(result.created_at),
+                    apexUserId: pluralsightFlowUser.apexUserId,
+                    mergedByUserAliasId: result.merged_by_id,
+                    numberOfCommits: parseInt(result.number),
+                    startedAt: new Date(result.pr_start),
+                    endedAt: result.pr_end ? new Date(result.pr_end): undefined,
+                    codingTime: result.coding_time,
+                    reviewTime: result.review_time,
+                    firstCommentAt: result.first_comment_at ? new Date(result.first_comment_at) : undefined,
+                };
+
+                return pullRequest;
+            });
+
+            await this.pluralsightFlowUserRepository.savePullRequests(pullRequestsToSave);
 
             // Update the extraction request if there was one.
+            if(extractionRequestId) {
+                await this.extractionRequestRepository.incrementCompletedExtractions(extractionRequestId);
+            }
+
+            return resolve();
         })
     }
 }

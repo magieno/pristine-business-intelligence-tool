@@ -6,13 +6,15 @@ import { v4 as uuidv4 } from 'uuid';
 import {BadRequestHttpError} from "@pristine-ts/networking";
 import {JiraUser} from "../models/jira-user.model";
 import {PluralsightFlowUser} from "../models/pluralsight-flow-user.model";
+import {format} from "date-fns";
+import {PluralsightFlowPullRequestModel} from "../models/pluralsight-flow-pull-request.model";
 
 @injectable()
 export class PluralsightFlowUserRepository {
     constructor(private readonly mysqlClient: MysqlClient, @inject("LogHandlerInterface") private readonly logHandler: LogHandlerInterface) {
     }
 
-    public createOrUpdate(apexUserId: string, userId: string): Promise<PluralsightFlowUser> {
+    public createOrUpdate(apexUserId: number, userId: string): Promise<PluralsightFlowUser> {
         return new Promise<PluralsightFlowUser>((resolve, reject) => {
             const connection = this.mysqlClient.getConnection();
 
@@ -111,6 +113,8 @@ export class PluralsightFlowUserRepository {
             }, (error, results, fields) => {
                 if (error) {
                     this.logHandler.error("Mysql error" + error?.message + " - " + error?.sql, {error})
+
+                    return reject();
                 }
 
                 if(results.length === 0) {
@@ -247,6 +251,100 @@ export class PluralsightFlowUserRepository {
                 values: [
                     apexUserId,
                     aliasUserId,
+                ],
+            }, (error, results, fields) => {
+                if (error) {
+                    this.logHandler.error("Mysql error" + error?.message + " - " + error?.sql, {error})
+                }
+
+                return resolve();
+            });
+
+            connection.end();
+        })
+    }
+
+    public savePullRequests(pullRequests: PluralsightFlowPullRequestModel[]): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            const connection = this.mysqlClient.getConnection();
+
+            connection.connect();
+
+            pullRequests.forEach(pullRequest => {
+                connection.query({
+                    sql: "INSERT INTO pluralsight_flow_pull_request (id, title, url, created_at, apex_user_id, merged_by_user_alias_id, coding_time, review_time, number_of_commits, started_at, ended_at, first_comment_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE " +
+                        "title = ?, url = ?, created_at = ?, apex_user_id = ?, merged_by_user_alias_id = ?, coding_time = ?, review_time = ?, number_of_commits = ?, started_at = ?, ended_at = ?, first_comment_at = ?",
+                    values: [
+                        pullRequest.id,
+                        pullRequest.title,
+                        pullRequest.url,
+                        format(pullRequest.createdAt, "yyyy-MM-dd hh:mm:ss"),
+                        pullRequest.apexUserId,
+                        pullRequest.mergedByUserAliasId,
+                        pullRequest.codingTime ?? undefined,
+                        pullRequest.reviewTime ?? undefined,
+                        pullRequest.numberOfCommits,
+                        format(pullRequest.startedAt, "yyyy-MM-dd hh:mm:ss"),
+                        pullRequest.endedAt ? format(pullRequest.endedAt, "yyyy-MM-dd hh:mm:ss"): undefined,
+                        pullRequest.firstCommentAt ? format(pullRequest.firstCommentAt, "yyyy-MM-dd hh:mm:ss"): undefined,
+                        pullRequest.title,
+                        pullRequest.url,
+                        format(pullRequest.createdAt, "yyyy-MM-dd hh:mm:ss"),
+                        pullRequest.apexUserId,
+                        pullRequest.mergedByUserAliasId,
+                        pullRequest.codingTime ?? undefined,
+                        pullRequest.reviewTime ?? undefined,
+                        pullRequest.numberOfCommits,
+                        format(pullRequest.startedAt, "yyyy-MM-dd hh:mm:ss"),
+                        pullRequest.endedAt ? format(pullRequest.endedAt, "yyyy-MM-dd hh:mm:ss"): undefined,
+                        pullRequest.firstCommentAt ? format(pullRequest.firstCommentAt, "yyyy-MM-dd hh:mm:ss"): undefined,
+                    ],
+                }, (error, results, fields) => {
+                    if (error) {
+                        this.logHandler.error("Mysql error" + error?.message + " - " + error?.sql, {error})
+                    }
+
+                    return resolve();
+                });
+            })
+
+            connection.end();
+        })
+    }
+
+    public savePullRequest(id: number, title: string, url: string, createdAt: Date, apexUserId: number, mergedByUserAliasId: number, numberOfCommits: number, startedAt: Date, endedAt?: Date, codingTime?: number, reviewTime?: number, firstCommentAt?: Date): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            const connection = this.mysqlClient.getConnection();
+
+            connection.connect();
+
+            connection.query({
+                sql: "INSERT INTO pluralsight_flow_pull_request (id, title, url, created_at, apex_user_id, merged_by_user_alias_id, coding_time, review_time, number_of_commits, started_at, ended_at, first_comment_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE " +
+                    "title = ?, url = ?, created_at = ?, apex_user_id = ?, merged_by_user_alias_id = ?, coding_time = ?, review_time = ?, number_of_commits = ?, started_at = ?, ended_at = ?, first_comment_at = ?",
+                values: [
+                    id,
+                    title,
+                    url,
+                    format(createdAt, "yyyy-MM-dd hh:mm:ss"),
+                    apexUserId,
+                    mergedByUserAliasId,
+                    codingTime ?? null,
+                    reviewTime ?? null,
+                    numberOfCommits,
+                    format(startedAt, "yyyy-MM-dd hh:mm:ss"),
+                    endedAt ? format(endedAt, "yyyy-MM-dd hh:mm:ss"): null,
+                    firstCommentAt ? format(firstCommentAt, "yyyy-MM-dd hh:mm:ss"): null,
+                    title,
+                    url,
+                    format(createdAt, "yyyy-MM-dd hh:mm:ss"),
+                    apexUserId,
+                    mergedByUserAliasId,
+                    codingTime ?? null,
+                    reviewTime ?? null,
+                    numberOfCommits,
+                    format(startedAt, "yyyy-MM-dd hh:mm:ss"),
+                    endedAt ? format(endedAt, "yyyy-MM-dd hh:mm:ss"): null,
+                    firstCommentAt ? format(firstCommentAt, "yyyy-MM-dd hh:mm:ss"): null,
                 ],
             }, (error, results, fields) => {
                 if (error) {

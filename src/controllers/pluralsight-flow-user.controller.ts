@@ -8,6 +8,7 @@ import {JiraManager} from "../managers/jira.manager";
 import {PluralsightFlowManager} from "../managers/pluralsight-flow.manager";
 import {PluralsightFlowUserAssociationOptions} from "../options/pluralsight-flow-user-association.options";
 import {PluralsightFlowUserAliasCreationOptions} from "../options/pluralsight-flow-user-alias-creation.options";
+import {PluralsightFlowPullRequestExtractionOptions} from "../options/pluralsight-flow-pull-request-extraction.options";
 
 @controller("/api")
 @injectable()
@@ -40,5 +41,16 @@ export class PluralsightFlowUserController {
     @route(HttpMethod.Delete, "/pluralsight-flow-users/:id/aliases/:aliasId")
     public removeAlias(@routeParameter("id") id: string, @routeParameter("aliasId") aliasId: string) {
         return this.pluralsightFlowManager.removeUserAlias(id, aliasId);
+    }
+
+
+    @route(HttpMethod.Post, "/users/:id/extract/pull-requests")
+    @bodyValidation(PluralsightFlowPullRequestExtractionOptions)
+    public extractPullRequests(@routeParameter("id") id: string, @body() options: PluralsightFlowPullRequestExtractionOptions) {
+        // Convert dates to a date object
+        const startDate = new Date(options.startDate);
+        const endDate = new Date(options.endDate);
+
+        return this.pluralsightFlowManager.fetchAndSavePullRequest(id, startDate, endDate);
     }
 }
