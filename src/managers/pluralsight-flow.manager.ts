@@ -11,6 +11,8 @@ import {LogHandlerInterface} from "@pristine-ts/logging";
 import {add, format} from 'date-fns'
 import {ExtractionRequestRepository} from "../repositories/extraction-request.repository";
 import {PluralsightFlowPullRequestModel} from "../models/pluralsight-flow-pull-request.model";
+import {PluralsightFlowCommitModel} from "../models/pluralsight-flow-commit.model";
+import {PluralsightFlowCommentModel} from "../models/pluralsight-flow-comment.model";
 
 @injectable()
 export class PluralsightFlowManager {
@@ -26,7 +28,7 @@ export class PluralsightFlowManager {
         return this.pluralsightFlowUserRepository.findAll(offset, limit);
     }
 
-    async get(apexUserId: string): Promise<PluralsightFlowUser> {
+    async get(apexUserId: number): Promise<PluralsightFlowUser> {
         const pluralsightFlowUser: PluralsightFlowUser | null = await this.pluralsightFlowUserRepository.get(apexUserId);
 
         if (pluralsightFlowUser === null) {
@@ -55,16 +57,16 @@ export class PluralsightFlowManager {
         return pluralsightFlowUser;
     }
 
-    public async addUserAlias(apexUserId: string, options: PluralsightFlowUserAliasCreationOptions): Promise<PluralsightFlowUser> {
+    public async addUserAlias(apexUserId: number, options: PluralsightFlowUserAliasCreationOptions): Promise<PluralsightFlowUser> {
         await this.pluralsightFlowUserRepository.addUserAlias(apexUserId, options.userAliasId);
         return this.get(apexUserId);
     }
 
-    public async removeUserAlias(apexUserId: string, aliasUserId: string): Promise<void> {
+    public async removeUserAlias(apexUserId: number, aliasUserId: number): Promise<void> {
         await this.pluralsightFlowUserRepository.removeUserAlias(apexUserId, aliasUserId);
     }
 
-    public async fetchAndSavePullRequest(userId: string, startDate: Date, endDate: Date, extractionRequestId?: string): Promise<void> {
+    public async fetchAndSavePullRequests(userId: string, startDate: Date, endDate: Date, extractionRequestId?: string): Promise<void> {
         return new Promise(async (resolve, reject) => {
             // Verify that StartDate cannot be bigger than end date.
             if (startDate > endDate) {
@@ -113,6 +115,7 @@ export class PluralsightFlowManager {
                     id: parseInt(result.id),
                     title: result.title,
                     url: result.url,
+                    reviewerUserAliasIds: result.reviewers,
                     createdAt: new Date(result.created_at),
                     apexUserId: pluralsightFlowUser.apexUserId,
                     mergedByUserAliasId: result.merged_by_id,
@@ -137,4 +140,186 @@ export class PluralsightFlowManager {
             return resolve();
         })
     }
+
+    public async fetchAndSaveCommits(userId: string, startDate: Date, endDate: Date, extractionRequestId?: string): Promise<void> {
+        return new Promise<void>(async (resolve, reject) => {
+            // Verify that StartDate cannot be bigger than end date.
+            if (startDate > endDate) {
+                this.logHandler.error("Start date bigger than end date - Start date: " + format(startDate, "yyyy-MM-dd") + " - End Date: " + format(endDate, "yyyy-MM-dd"));
+                return reject();
+            }
+
+            // Retrieve the ApexUserId from the userId.
+            const pluralsightFlowUser = await this.getFromUserId(userId);
+
+            // Make the Request to PluralsightFlow
+            const requestOptions: HttpRequestOptions = {
+                isRetryable: (httpRequest, httpResponse) => {
+                    this.logHandler.error("Retrying");
+                    return httpResponse.status >= 500;
+                },
+                maximumNumberOfRetries: 3,
+            };
+
+            const limit = 1000;
+            const offset = 0;
+
+            const httpRequest: HttpRequestInterface = {
+                url: "https://flow.pluralsight.com/v3/customer/core/commits/?limit=" + limit + "&offset=" + offset + "&author_date__gte=" + format(startDate, "yyyy-MM-dd") + "&author_date__lte=" + format(add(startDate, {days: 5}), "yyyy-MM-dd") + "&apex_user_id=" + pluralsightFlowUser.apexUserId + "&ordering=author_date",
+                httpMethod: HttpMethod.Get,
+                headers: {
+                    "Accept": "application/json",
+                    "Authorization": "Bearer " + this.apiKey,
+                    "Content-Type": "application/json",
+                }
+            }
+
+            const httpResponse = await this.httpClient.request(httpRequest, requestOptions);
+
+            // Loop over the commits
+            const body = JSON.parse(httpResponse.body);
+
+            if (body === undefined || body.results === undefined || Array.isArray(body.results) === false) {
+                this.logHandler.error("Body is undefined or results is undefined or results is not an array.");
+                return reject();
+            }
+
+            // Save the commits
+            const commitsToSave: PluralsightFlowCommitModel[] = body.results.map(result => {
+                const commit: PluralsightFlowCommitModel = {
+                    id: parseInt(result.id),
+                    createdAt: new Date(result.committer_date),
+                    apexUserId: pluralsightFlowUser.apexUserId,
+                    isMerge: result.is_merge,
+                    sha: result.hexsha,
+                };
+
+                return commit;
+            });
+
+            await this.pluralsightFlowUserRepository.saveCommits(commitsToSave);
+
+            // Update the extraction request if there was one.
+            if(extractionRequestId) {
+                await this.extractionRequestRepository.incrementCompletedExtractions(extractionRequestId);
+            }
+
+            return resolve();
+        })
+    }
+
+    public async fetchAndSaveUserAliases(userId: string): Promise<void> {
+        return new Promise(async (resolve, reject) => {
+            // Retrieve the ApexUserId from the userId.
+            const pluralsightFlowUser = await this.getFromUserId(userId);
+
+            // Make the Request to PluralsightFlow
+            const requestOptions: HttpRequestOptions = {
+                isRetryable: (httpRequest, httpResponse) => {
+                    this.logHandler.error("Retrying");
+                    return httpResponse.status >= 500;
+                },
+                maximumNumberOfRetries: 3,
+            };
+
+            const limit = 1000;
+            const offset = 0;
+
+            const httpRequest: HttpRequestInterface = {
+                url: "https://flow.pluralsight.com/v3/customer/core/user_alias/?limit=" + limit + "&offset=" + offset + "&apex_user=" + pluralsightFlowUser.apexUserId,
+                httpMethod: HttpMethod.Get,
+                headers: {
+                    "Accept": "application/json",
+                    "Authorization": "Bearer " + this.apiKey,
+                    "Content-Type": "application/json",
+                }
+            }
+
+            const httpResponse = await this.httpClient.request(httpRequest, requestOptions);
+
+            // Loop over the pull requests
+            const body = JSON.parse(httpResponse.body);
+
+            if (body === undefined || body.results === undefined || Array.isArray(body.results) === false) {
+                this.logHandler.error("Body is undefined or results is undefined or results is not an array.");
+                return reject();
+            }
+
+            // Save the pull requests
+            const aliasUserIds: number[] = body.results.map(result => {
+                return result.id;
+            });
+
+            await this.pluralsightFlowUserRepository.addUserAliases(pluralsightFlowUser.apexUserId, aliasUserIds);
+
+            return resolve();
+        })
+    }
+
+
+    public async fetchAndSaveComments(userId: string, startDate: Date, endDate: Date, extractionRequestId?: string): Promise<void> {
+        return new Promise(async (resolve, reject) => {
+            // Retrieve the ApexUserId from the userId.
+            const pluralsightFlowUser = await this.getFromUserId(userId);
+
+            // Make the Request to PluralsightFlow
+            const requestOptions: HttpRequestOptions = {
+                isRetryable: (httpRequest, httpResponse) => {
+                    this.logHandler.error("Retrying");
+                    return httpResponse.status >= 500;
+                },
+                maximumNumberOfRetries: 3,
+            };
+
+            const limit = 1000;
+            const offset = 0;
+
+            const httpRequest: HttpRequestInterface = {
+                url: "https://flow.pluralsight.com/v3/customer/core/pull_request_comments/?limit=" + limit + "&offset=" + offset + "&author_date__gte=" + format(startDate, "yyyy-MM-dd") + "&author_date__lte=" + format(add(startDate, {days: 5}), "yyyy-MM-dd") + "&apex_user_id=" + pluralsightFlowUser.apexUserId + "&ordering=author_date",
+                httpMethod: HttpMethod.Get,
+                headers: {
+                    "Accept": "application/json",
+                    "Authorization": "Bearer " + this.apiKey,
+                    "Content-Type": "application/json",
+                }
+            }
+
+            const httpResponse = await this.httpClient.request(httpRequest, requestOptions);
+
+            // Loop over the pull requests
+            const body = JSON.parse(httpResponse.body);
+
+            if (body === undefined || body.results === undefined || Array.isArray(body.results) === false) {
+                this.logHandler.error("Body is undefined or results is undefined or results is not an array.");
+                return reject();
+            }
+
+            // Save the comments
+            const comments: PluralsightFlowCommentModel[] = body.results.map(result => {
+                const pullRequest: PluralsightFlowCommentModel = {
+                    id: parseInt(result.id),
+                    apexUserId: pluralsightFlowUser.apexUserId,
+                    pullRequestId: result.pull_request_id,
+                    body: result.body.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, ''),
+                    wordCount: result.word_count,
+                    commentRobustness: result.comment_robustness,
+                    wasInfluential: result.was_influential,
+                    createdAt: new Date(result.created_at),
+                };
+
+                return pullRequest;
+            });
+
+            await this.pluralsightFlowUserRepository.saveComments(comments);
+
+            // Update the extraction request if there was one.
+            if(extractionRequestId) {
+                await this.extractionRequestRepository.incrementCompletedExtractions(extractionRequestId);
+            }
+
+            return resolve();
+        })
+    }
+
+
 }

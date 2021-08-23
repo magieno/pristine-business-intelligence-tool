@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS `user` (
-    id VARCHAR(32) NOT NULL,
+    id VARCHAR(36) NOT NULL,
     email VARCHAR(255) NOT NULL,
     CONSTRAINT user_id_pk PRIMARY KEY (id),
     CONSTRAINT user_unique_email UNIQUE (email)

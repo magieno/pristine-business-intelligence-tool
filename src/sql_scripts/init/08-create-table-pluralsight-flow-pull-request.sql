@@ -12,5 +12,10 @@ CREATE TABLE IF NOT EXISTS `pluralsight_flow_pull_request` (
     ended_at DATETIME,
     first_comment_at DATETIME,
     CONSTRAINT pluralsight_flow_pull_request_id_pk PRIMARY KEY (id),
-    CONSTRAINT pluralsight_flow_pull_request_apex_user_id_fk FOREIGN KEY (apex_user_id) REFERENCES pluralsight_flow_user(apex_user_id)
+    CONSTRAINT pluralsight_flow_pull_request_apex_user_id_fk FOREIGN KEY (apex_user_id) REFERENCES pluralsight_flow_user(apex_user_id),
+    INDEX pluralsight_flow_pull_request_apex_user_id_idx (apex_user_id),
+    INDEX pluralsight_flow_pull_request_merged_by_user_alias_id_idx (merged_by_user_alias_id),
+    INDEX pluralsight_flow_comments_created_at_idx (created_at),
+    INDEX pluralsight_flow_comments_started_at_idx (started_at),
+    INDEX pluralsight_flow_comments_ended_at_idx (ended_at)
 );

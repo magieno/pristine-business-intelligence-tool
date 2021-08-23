@@ -9,6 +9,8 @@ import {PluralsightFlowManager} from "../managers/pluralsight-flow.manager";
 import {PluralsightFlowUserAssociationOptions} from "../options/pluralsight-flow-user-association.options";
 import {PluralsightFlowUserAliasCreationOptions} from "../options/pluralsight-flow-user-alias-creation.options";
 import {PluralsightFlowPullRequestExtractionOptions} from "../options/pluralsight-flow-pull-request-extraction.options";
+import {PluralsightFlowCommitExtractionOptions} from "../options/pluralsight-flow-commit-extraction.options";
+import {PluralsightFlowCommentExtractionOptions} from "../options/pluralsight-flow-comment-extraction.options";
 
 @controller("/api")
 @injectable()
@@ -18,7 +20,7 @@ export class PluralsightFlowUserController {
 
     @route(HttpMethod.Get, "/pluralsight-flow-users/:id")
     public get(@routeParameter("id") id: string) {
-        return this.pluralsightFlowManager.get(id);
+        return this.pluralsightFlowManager.get(parseInt(id));
     }
 
     @route(HttpMethod.Get, "/pluralsight-flow-users")
@@ -35,12 +37,12 @@ export class PluralsightFlowUserController {
     @route(HttpMethod.Post, "/pluralsight-flow-users/:id/aliases")
     @bodyValidation(PluralsightFlowUserAliasCreationOptions)
     public addAlias(@routeParameter("id") id: string, @body() options: PluralsightFlowUserAliasCreationOptions) {
-        return this.pluralsightFlowManager.addUserAlias(id, options);
+        return this.pluralsightFlowManager.addUserAlias(parseInt(id), options);
     }
 
     @route(HttpMethod.Delete, "/pluralsight-flow-users/:id/aliases/:aliasId")
     public removeAlias(@routeParameter("id") id: string, @routeParameter("aliasId") aliasId: string) {
-        return this.pluralsightFlowManager.removeUserAlias(id, aliasId);
+        return this.pluralsightFlowManager.removeUserAlias(parseInt(id), parseInt(aliasId));
     }
 
 
@@ -51,6 +53,31 @@ export class PluralsightFlowUserController {
         const startDate = new Date(options.startDate);
         const endDate = new Date(options.endDate);
 
-        return this.pluralsightFlowManager.fetchAndSavePullRequest(id, startDate, endDate);
+        return this.pluralsightFlowManager.fetchAndSavePullRequests(id, startDate, endDate);
+    }
+
+    @route(HttpMethod.Post, "/users/:id/extract/commits")
+    @bodyValidation(PluralsightFlowCommitExtractionOptions)
+    public extractCommits(@routeParameter("id") id: string, @body() options: PluralsightFlowCommitExtractionOptions) {
+        // Convert dates to a date object
+        const startDate = new Date(options.startDate);
+        const endDate = new Date(options.endDate);
+
+        return this.pluralsightFlowManager.fetchAndSaveCommits(id, startDate, endDate);
+    }
+
+    @route(HttpMethod.Post, "/users/:id/extract/comments")
+    @bodyValidation(PluralsightFlowCommentExtractionOptions)
+    public extractComments(@routeParameter("id") id: string, @body() options: PluralsightFlowCommentExtractionOptions) {
+        // Convert dates to a date object
+        const startDate = new Date(options.startDate);
+        const endDate = new Date(options.endDate);
+
+        return this.pluralsightFlowManager.fetchAndSaveComments(id, startDate, endDate);
+    }
+
+    @route(HttpMethod.Post, "/users/:id/extract/user-aliases")
+    public extractUserAliases(@routeParameter("id") id: string) {
+        return this.pluralsightFlowManager.fetchAndSaveUserAliases(id);
     }
 }

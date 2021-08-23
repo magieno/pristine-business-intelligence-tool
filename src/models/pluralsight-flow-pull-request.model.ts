@@ -2,6 +2,7 @@ export class PluralsightFlowPullRequestModel {
     id: number;
     title: string;
     url: string;
+    reviewerUserAliasIds: number[];
     createdAt: Date;
     apexUserId: number;
     mergedByUserAliasId: number;
