@@ -7,8 +7,8 @@
   "main": "src/main.ts",
   "scripts": {
     "prebuild": "rm -rf dist",
-    "build": "tsc -p tsconfig.json && tsc -p tsconfig.cjs.json",
-    "build:cjs": "tsc -p tsconfig.cjs.json",
+    "build": "tsc -p tsconfig.json && tsc -p tsconfig.esm.json",
+    "build:cjs": "tsc -p tsconfig.esm.json",
     "build:esm": "tsc -p tsconfig.json",
     "bundle": "rollup -c rollup.config.js --compact",
     "bundle:min": "rollup -c rollup.min.config.js --compact",
@@ -18,10 +18,12 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
-    "express": "PRISTINE_LOGGING_CONSOLE_LOGGER_OUTPUT_MODE=SIMPLE ts-node ./src/express.ts"
+    "express": "PRISTINE_LOGGING_CONSOLE_LOGGER_OUTPUT_MODE=SIMPLE ts-node ./src/express.ts",
+    "local-sqs": "PRISTINE_LOGGING_CONSOLE_LOGGER_OUTPUT_MODE=SIMPLE ts-node ./src/local-sqs.ts"
   },
   "dependencies": {
     "@aws-sdk/client-secrets-manager": "^3.27.0",
+    "@aws-sdk/client-sqs": "^3.27.0",
     "@awslabs-community-fork/dynamodb-data-mapper": "^0.7.13",
     "@awslabs-community-fork/dynamodb-data-mapper-annotations": "^0.7.13",
     "@pristine-ts/auth0": "^0.0.121",
