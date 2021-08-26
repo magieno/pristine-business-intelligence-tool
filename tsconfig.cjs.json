@@ -2,10 +2,8 @@
   "compilerOptions": {
     "moduleResolution": "node",
     "target": "es6",
-    "module":"es2020",
-    "lib": [
-      "es2020"
-    ],
+    "module":"CommonJS",
+    "lib": ["es2020"],
     "strictNullChecks": true,
     "sourceMap": true,
     "declaration": false,
@@ -14,7 +12,7 @@
     "emitDecoratorMetadata": true,
     "esModuleInterop": true,
     "removeComments": true,
-    "outDir": "dist/esm",
+    "outDir": "dist/cjs",
     "typeRoots": [
       "node_modules/@types"
     ],

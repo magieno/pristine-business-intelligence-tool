@@ -17,8 +17,8 @@ export class PluralsightFlowUserRepository {
     }
 
     public createOrUpdate(apexUserId: number, userId: string): Promise<PluralsightFlowUser> {
-        return new Promise<PluralsightFlowUser>((resolve, reject) => {
-            const connection = this.mysqlClient.getConnection();
+        return new Promise<PluralsightFlowUser>(async (resolve, reject) => {
+            const connection = await this.mysqlClient.getConnection();
 
             connection.connect();
 
@@ -47,8 +47,8 @@ export class PluralsightFlowUserRepository {
     }
 
     public get(apexUserId: number): Promise<PluralsightFlowUser | null> {
-        return new Promise<PluralsightFlowUser | null>((resolve, reject) => {
-            const connection = this.mysqlClient.getConnection();
+        return new Promise<PluralsightFlowUser | null>(async (resolve, reject) => {
+            const connection = await this.mysqlClient.getConnection();
 
             connection.connect();
 
@@ -102,8 +102,8 @@ export class PluralsightFlowUserRepository {
     }
 
     public getFromUserId(userId: string): Promise<PluralsightFlowUser | null> {
-        return new Promise<PluralsightFlowUser | null>((resolve, reject) => {
-            const connection = this.mysqlClient.getConnection();
+        return new Promise<PluralsightFlowUser | null>(async (resolve, reject) => {
+            const connection = await this.mysqlClient.getConnection();
 
             connection.connect();
 
@@ -159,10 +159,10 @@ export class PluralsightFlowUserRepository {
     }
 
     public findAll(offset: number = 0, limit: number = 100): Promise<PluralsightFlowUser[]> {
-        return new Promise<PluralsightFlowUser[]>((resolve, reject) => {
+        return new Promise<PluralsightFlowUser[]>(async (resolve, reject) => {
             const pluralsightFlowUsers: PluralsightFlowUser[] = [];
 
-            const connection = this.mysqlClient.getConnection();
+            const connection = await this.mysqlClient.getConnection();
 
             connection.connect();
 
@@ -213,8 +213,8 @@ export class PluralsightFlowUserRepository {
     }
 
     public addUserAlias(apexUserId: number, aliasUserId: number): Promise<void> {
-        return new Promise((resolve, reject) => {
-            const connection = this.mysqlClient.getConnection();
+        return new Promise(async (resolve, reject) => {
+            const connection = await this.mysqlClient.getConnection();
 
             connection.connect();
 
@@ -244,7 +244,7 @@ export class PluralsightFlowUserRepository {
 
     public addUserAliases(apexUserId: number, aliasUserIds: number[]): Promise<void> {
         return new Promise(async (resolve, reject) => {
-            const connection = this.mysqlClient.getConnection();
+            const connection = await this.mysqlClient.getConnection();
 
             connection.connect();
 
@@ -284,8 +284,8 @@ export class PluralsightFlowUserRepository {
     }
 
     public removeUserAlias(apexUserId: number, aliasUserId: number): Promise<void> {
-        return new Promise((resolve, reject) => {
-            const connection = this.mysqlClient.getConnection();
+        return new Promise(async (resolve, reject) => {
+            const connection = await this.mysqlClient.getConnection();
 
             connection.connect();
 
@@ -309,7 +309,7 @@ export class PluralsightFlowUserRepository {
 
     public savePullRequests(pullRequests: PluralsightFlowPullRequestModel[]): Promise<void> {
         return new Promise<void>(async (resolve, reject) => {
-            const connection = this.mysqlClient.getConnection();
+            const connection = await this.mysqlClient.getConnection();
 
             connection.connect();
 
@@ -390,7 +390,7 @@ export class PluralsightFlowUserRepository {
 
     public saveCommits(commits: PluralsightFlowCommitModel[]): Promise<void> {
         return new Promise<void>(async (resolve, reject) => {
-            const connection = this.mysqlClient.getConnection();
+            const connection = await this.mysqlClient.getConnection();
 
             connection.connect();
 
@@ -433,7 +433,7 @@ export class PluralsightFlowUserRepository {
 
     public saveComments(comments: PluralsightFlowCommentModel[]): Promise<void> {
         return new Promise<void>(async (resolve, reject) => {
-            const connection = this.mysqlClient.getConnection();
+            const connection = await this.mysqlClient.getConnection();
 
             connection.connect();
 

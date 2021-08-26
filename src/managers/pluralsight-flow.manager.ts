@@ -256,7 +256,6 @@ export class PluralsightFlowManager {
         })
     }
 
-
     public async fetchAndSaveComments(userId: string, startDate: Date, endDate: Date, extractionRequestId?: string): Promise<void> {
         return new Promise(async (resolve, reject) => {
             // Retrieve the ApexUserId from the userId.
@@ -320,6 +319,4 @@ export class PluralsightFlowManager {
             return resolve();
         })
     }
-
-
 }

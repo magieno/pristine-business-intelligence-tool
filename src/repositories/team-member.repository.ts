@@ -12,8 +12,8 @@ export class TeamMemberRepository {
     }
 
     public addTeamMember(teamId: string, userId: string): Promise<void> {
-        return new Promise((resolve, reject) => {
-            const connection = this.mysqlClient.getConnection();
+        return new Promise(async (resolve, reject) => {
+            const connection = await this.mysqlClient.getConnection();
 
             connection.connect();
 
@@ -42,8 +42,8 @@ export class TeamMemberRepository {
     }
 
     public removeTeamMember(teamId: string, userId: string): Promise<void> {
-        return new Promise((resolve, reject) => {
-            const connection = this.mysqlClient.getConnection();
+        return new Promise(async (resolve, reject) => {
+            const connection = await this.mysqlClient.getConnection();
 
             connection.connect();
 

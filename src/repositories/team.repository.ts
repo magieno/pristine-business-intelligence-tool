@@ -12,9 +12,9 @@ export class TeamRepository {
     }
 
     public get(id: string): Promise<Team | null> {
-        return new Promise<Team | null>((resolve, reject) => {
+        return new Promise<Team | null>(async (resolve, reject) => {
 
-            const connection = this.mysqlClient.getConnection();
+            const connection = await this.mysqlClient.getConnection();
 
             connection.connect();
 
@@ -71,9 +71,9 @@ export class TeamRepository {
     }
 
     public findAll(offset: number = 0, limit: number = 100): Promise<Team[]> {
-        return new Promise<Team[]>((resolve, reject) => {
+        return new Promise<Team[]>(async (resolve, reject) => {
 
-            const connection = this.mysqlClient.getConnection();
+            const connection = await this.mysqlClient.getConnection();
 
             connection.connect();
 
@@ -107,12 +107,12 @@ export class TeamRepository {
     }
 
     public create(name: string): Promise<Team> {
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
             const team = new Team();
             team.id = uuidv4();
             team.name = name;
 
-            const connection = this.mysqlClient.getConnection();
+            const connection = await this.mysqlClient.getConnection();
 
             connection.connect();
 

@@ -11,9 +11,9 @@ export class UserRepository {
     }
 
     public get(id: string): Promise<User | null> {
-        return new Promise<User | null>((resolve, reject) => {
+        return new Promise<User | null>(async (resolve, reject) => {
 
-            const connection = this.mysqlClient.getConnection();
+            const connection = await this.mysqlClient.getConnection();
 
             connection.connect();
 
@@ -43,10 +43,10 @@ export class UserRepository {
     }
 
     public findAll(offset: number = 0, limit: number = 100): Promise<User[]> {
-        return new Promise<User[]>((resolve, reject) => {
+        return new Promise<User[]>(async (resolve, reject) => {
             const users: User[] = [];
 
-            const connection = this.mysqlClient.getConnection();
+            const connection = await this.mysqlClient.getConnection();
 
             connection.connect();
 
@@ -77,12 +77,12 @@ export class UserRepository {
     }
 
     public create(email: string): Promise<User> {
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
             const user = new User();
             user.email = email;
             user.id = uuidv4();
 
-            const connection = this.mysqlClient.getConnection();
+            const connection = await this.mysqlClient.getConnection();
 
             connection.connect();
 

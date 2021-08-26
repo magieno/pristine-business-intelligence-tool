@@ -14,9 +14,9 @@ export class ExtractionRequestRepository {
     }
 
     public get(id: string): Promise<ExtractionRequest | null> {
-        return new Promise<ExtractionRequest | null>((resolve, reject) => {
+        return new Promise<ExtractionRequest | null>(async (resolve, reject) => {
 
-            const connection = this.mysqlClient.getConnection();
+            const connection = await this.mysqlClient.getConnection();
 
             connection.connect();
 
@@ -54,10 +54,10 @@ export class ExtractionRequestRepository {
     }
 
     public findAll(offset: number = 0, limit: number = 100): Promise<ExtractionRequest[]> {
-        return new Promise<ExtractionRequest[]>((resolve, reject) => {
+        return new Promise<ExtractionRequest[]>(async (resolve, reject) => {
             const extractionRequests: ExtractionRequest[] = [];
 
-            const connection = this.mysqlClient.getConnection();
+            const connection = await this.mysqlClient.getConnection();
 
             connection.connect();
 
@@ -95,7 +95,7 @@ export class ExtractionRequestRepository {
     }
 
     public create(service: ExtractionServiceEnum, datapoints: string[], teamIds: string[], userIds: string[], totalNumberOfExtractions: number, startDate: Date, endDate: Date): Promise<ExtractionRequest> {
-        return new Promise<ExtractionRequest>((resolve, reject) => {
+        return new Promise<ExtractionRequest>(async (resolve, reject) => {
             const extractionRequest = new ExtractionRequest();
             extractionRequest.id = uuidv4();
             extractionRequest.status = ExtractionRequestStatusEnum.InProgress;
@@ -108,7 +108,7 @@ export class ExtractionRequestRepository {
             extractionRequest.startDate = startDate;
             extractionRequest.endDate = endDate;
 
-            const connection = this.mysqlClient.getConnection();
+            const connection = await this.mysqlClient.getConnection();
 
             connection.connect();
 
@@ -145,8 +145,8 @@ export class ExtractionRequestRepository {
     }
 
     public updateStatus(id: string, status: ExtractionRequestStatusEnum): Promise<void> {
-        return new Promise((resolve, reject) => {
-            const connection = this.mysqlClient.getConnection();
+        return new Promise(async (resolve, reject) => {
+            const connection = await this.mysqlClient.getConnection();
 
             connection.connect();
 
@@ -169,8 +169,8 @@ export class ExtractionRequestRepository {
     }
 
     public incrementCompletedExtractions(id: string): Promise<void> {
-        return new Promise((resolve, reject) => {
-            const connection = this.mysqlClient.getConnection();
+        return new Promise(async (resolve, reject) => {
+            const connection = await this.mysqlClient.getConnection();
 
             connection.connect();
 

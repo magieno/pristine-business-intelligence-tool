@@ -70,14 +70,30 @@ export const AppModule: AppModuleInterface = {
         parameterName: "mysql.host",
         defaultValue: "localhost",
         isRequired: false,
+        defaultResolvers: [
+            new EnvironmentVariableResolver("DATABASE_HOST"),
+        ],
     }, {
-        parameterName: "mysql.user",
+        parameterName: "mysql.username",
         defaultValue: "magieno",
         isRequired: false,
+        defaultResolvers: [
+            new EnvironmentVariableResolver("DATABASE_USERNAME"),
+        ],
     }, {
         parameterName: "mysql.password",
         defaultValue: "magieno",
         isRequired: false,
+        defaultResolvers: [
+            new EnvironmentVariableResolver("DATABASE_PASSWORD"),
+        ],
+    }, {
+        parameterName: "mysql.secret.arn",
+        defaultValue: "",
+        isRequired: false,
+        defaultResolvers: [
+            new EnvironmentVariableResolver("DATABASE_SECRET_ARN"),
+        ],
     }, {
         parameterName: "mysql.database",
         defaultValue: "business_intelligence_tool",
@@ -87,7 +103,7 @@ export const AppModule: AppModuleInterface = {
         isRequired: true,
         defaultResolvers: [
             new EnvironmentVariableResolver("PLURALSIGHT_FLOW_API_KEY"),
-            new SSMResolver("pluralsight-flow.api-key", "us-east-2"),
+            new SSMResolver("pluralsight-flow.api-key", "us-east-2", true),
         ]
     },
     ]

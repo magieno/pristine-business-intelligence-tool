@@ -12,8 +12,8 @@ export class JiraUserRepository {
     }
 
     public createOrUpdate(id: string, userId: string): Promise<JiraUser> {
-        return new Promise<JiraUser>((resolve, reject) => {
-            const connection = this.mysqlClient.getConnection();
+        return new Promise<JiraUser>(async (resolve, reject) => {
+            const connection = await this.mysqlClient.getConnection();
 
             connection.connect();
 
@@ -42,8 +42,8 @@ export class JiraUserRepository {
     }
 
     public get(id: string): Promise<JiraUser | null> {
-        return new Promise<JiraUser | null>((resolve, reject) => {
-            const connection = this.mysqlClient.getConnection();
+        return new Promise<JiraUser | null>(async (resolve, reject) => {
+            const connection = await this.mysqlClient.getConnection();
 
             connection.connect();
 
@@ -78,10 +78,10 @@ export class JiraUserRepository {
     }
 
     public findAll(offset: number = 0, limit: number = 100): Promise<JiraUser[]> {
-        return new Promise<JiraUser[]>((resolve, reject) => {
+        return new Promise<JiraUser[]>(async (resolve, reject) => {
             const jiraUsers: JiraUser[] = [];
 
-            const connection = this.mysqlClient.getConnection();
+            const connection = await this.mysqlClient.getConnection();
 
             connection.connect();
 
