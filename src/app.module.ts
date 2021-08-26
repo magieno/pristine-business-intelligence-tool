@@ -28,6 +28,7 @@ import {ExtractionRequestManager} from "./managers/extraction-request.manager";
 import {ExtractionRequestRepository} from "./repositories/extraction-request.repository";
 import {ExtractionRequestController} from "./controllers/extraction-request.controller";
 import {EnvironmentVariableResolver} from "@pristine-ts/configuration";
+import {ExtractionRequestListener} from "./listeners/extraction-request.listener";
 
 export const AppModuleKeyname = "pristine.starter";
 
@@ -39,6 +40,9 @@ export const AppModule: AppModuleInterface = {
         PluralsightFlowUserController,
         TeamController,
         UserController,
+
+        // Listeners
+        ExtractionRequestListener,
 
         // Managers
         ExtractionRequestManager,
@@ -98,13 +102,27 @@ export const AppModule: AppModuleInterface = {
         parameterName: "mysql.database",
         defaultValue: "business_intelligence_tool",
         isRequired: false,
-    },{
-        parameterName: "pluralsight-flow.api-key",
+    }, {
+        parameterName: "queue.url",
         isRequired: true,
         defaultResolvers: [
-            new EnvironmentVariableResolver("PLURALSIGHT_FLOW_API_KEY"),
-            new SSMResolver("pluralsight-flow.api-key", "us-east-2", true),
-        ]
+            new EnvironmentVariableResolver("QUEUE_URL"),
+        ],
     },
+        {
+            parameterName: "queue.endpoint",
+            isRequired: false,
+            defaultValue: "",
+            defaultResolvers: [
+                new EnvironmentVariableResolver("QUEUE_ENDPOINT"),
+            ],
+        }, {
+            parameterName: "pluralsight-flow.api-key",
+            isRequired: true,
+            defaultResolvers: [
+                new EnvironmentVariableResolver("PLURALSIGHT_FLOW_API_KEY"),
+                new SSMResolver("pluralsight-flow.api-key", "us-east-2", true),
+            ]
+        },
     ]
 };

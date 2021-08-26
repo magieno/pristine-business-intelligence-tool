@@ -133,6 +133,9 @@ Resources:
           DATABASE_SECRET_ARN:
             Fn::ImportValue:
                 !Sub "${MysqlStack}:secret:arn"
+          QUEUE_URL:
+            Fn::ImportValue:
+                !Sub "${SQSStack}:sqs-queue:url"
 
       Code:
         S3Bucket: !Ref LambdaS3Bucket
