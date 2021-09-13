@@ -29,6 +29,9 @@ import {ExtractionRequestRepository} from "./repositories/extraction-request.rep
 import {ExtractionRequestController} from "./controllers/extraction-request.controller";
 import {EnvironmentVariableResolver} from "@pristine-ts/configuration";
 import {ExtractionRequestListener} from "./listeners/extraction-request.listener";
+import {AwsSchedulingModule} from "@pristine-ts/aws-scheduling";
+import {SchedulingModule} from "@pristine-ts/scheduling";
+import {TestTask} from "./tasks/test.task";
 
 export const AppModuleKeyname = "pristine.starter";
 
@@ -58,13 +61,19 @@ export const AppModule: AppModuleInterface = {
         TeamRepository,
         TeamMemberRepository,
         UserRepository,
+
+        // Tasks
+        TestTask,
     ],
     importModules: [
         AwsModule,
+        AwsXrayModule,
+        AwsSchedulingModule,
         CoreModule,
         HttpModule,
         LoggingModule,
         NetworkingModule,
+        SchedulingModule,
         SecurityModule,
         ValidationModule,
         TelemetryModule,

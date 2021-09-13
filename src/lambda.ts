@@ -85,22 +85,24 @@ export const bootstrapKernel = async () => {
 };
 
 export const handler = async (event: any, context: Context) => {
-    cachedKernel = cachedKernel ?? await bootstrapKernel();
+    console.log(event);
 
-    let error
+    cachedKernel = cachedKernel ?? await bootstrapKernel();
+    const logHandler = cachedKernel.container.resolve(LogHandler);
+    logHandler.debug("Event", {event});
+
     try {
         await cachedKernel.handleRawEvent(event);
 
         return;
-    } catch (e) {
+    } catch (error) {
+        logHandler.error("Error", {event, error,});
+
         const apiGatewayRequestMapper = cachedKernel.container.resolve(RequestMapper);
         const apiGatewayResponseMapper = cachedKernel.container.resolve(ResponseMapper);
-        const logHandler = cachedKernel.container.resolve(LogHandler);
-        logHandler.debug("Event", {event});
 
         const request = apiGatewayRequestMapper.map(event);
         logHandler.debug("Mapped request", {request});
-
 
         return apiGatewayResponseMapper.reverseMap(await cachedKernel.handleRequest(request));
     }

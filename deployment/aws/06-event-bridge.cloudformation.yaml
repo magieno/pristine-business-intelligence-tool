@@ -1,0 +1,42 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  EventBus:
+    Type: AWS::Events::EventBus
+    Properties:
+      Name: !Ref EventBusName
+
+  ScheduledRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: "ScheduledRule"
+      ScheduleExpression: "rate(5 minutes)"
+      State: "ENABLED"
+      Targets:
+        -   Arn:
+              Fn::ImportValue: !Sub "${LambdaStack}:lambda:arn"
+            Id:
+              Fn::ImportValue: !Sub "${LambdaStack}:lambda:name"
+
+  EventRuleToInvokeLambda:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Fn::ImportValue: !Sub "${LambdaStack}:lambda:name"
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule.Arn
+
+Parameters:
+  EventBusName:
+    Type: String
+    Default: "pristine-bi-tool-event-bridge"
+  LambdaStack:
+    Type: String
+    Default: "pristine-bi-tool-lambda"
+
+Outputs:
+  EventBus:
+    Description: The name of the event bus
+    Value: !Ref EventBus
+    Export:
+      Name: !Sub "${AWS::StackName}:event-bus:name"
