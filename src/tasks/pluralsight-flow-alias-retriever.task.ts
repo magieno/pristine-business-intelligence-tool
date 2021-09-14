@@ -20,11 +20,15 @@ export class PluralsightFlowAliasRetrieverTask implements ScheduledTaskInterface
 
         if(lastScheduledTask && (+currentTime - +lastScheduledTask.lastRunAt) < 24*60*601000) {
             this.logHandler.debug("Skipping this scheduled task since it ran less than 24 hours ago", {lastScheduledTask})
+            return;
         }
+
+        this.logHandler.debug("Running Pluralsight flow alias retriever task.")
 
         await this.scheduledTaskRepository.completeTaskExecution(this.taskAlias);
 
-        this.logHandler.debug("Running test task.")
+        this.logHandler.debug("Completed running pluralsight flow alias retriever task.")
+
         return Promise.resolve();
     }
 

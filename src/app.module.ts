@@ -32,6 +32,7 @@ import {ExtractionRequestListener} from "./listeners/extraction-request.listener
 import {AwsSchedulingModule} from "@pristine-ts/aws-scheduling";
 import {SchedulingModule} from "@pristine-ts/scheduling";
 import {TestTask} from "./tasks/test.task";
+import {PluralsightFlowAliasRetrieverTask} from "./tasks/pluralsight-flow-alias-retriever.task";
 
 export const AppModuleKeyname = "pristine.starter";
 
@@ -63,6 +64,7 @@ export const AppModule: AppModuleInterface = {
         UserRepository,
 
         // Tasks
+        PluralsightFlowAliasRetrieverTask,
         TestTask,
     ],
     importModules: [
